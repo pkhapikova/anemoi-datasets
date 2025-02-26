@@ -32,6 +32,7 @@ from anemoi.utils.sanitise import sanitise
 from earthkit.data.core.order import build_remapping
 
 from anemoi.datasets import MissingDateError
+from anemoi.datasets import Zarr2AndZarr3
 from anemoi.datasets import open_dataset
 from anemoi.datasets.create.input.trace import enable_trace
 from anemoi.datasets.create.persistent import build_storage
@@ -154,7 +155,7 @@ def _path_readable(path: str) -> bool:
     try:
         zarr.open(path, "r")
         return True
-    except zarr.errors.PathNotFoundError:
+    except Zarr2AndZarr3.get_not_found_exception():
         return False
 
 
@@ -208,7 +209,7 @@ class Dataset:
         import zarr
 
         LOG.debug(f"Updating metadata {kwargs}")
-        z = zarr.open(self.path, mode="w+")
+        z = zarr.open(self.path, mode=Zarr2AndZarr3.zarr_open_mode_append())
         for k, v in kwargs.items():
             if isinstance(v, np.datetime64):
                 v = v.astype(datetime.datetime)
@@ -1520,7 +1521,7 @@ class Statistics(Actor, HasStatisticTempMixin, HasRegistryMixin):
 
         LOG.info(stats)
 
-        if not all(self.registry.get_flags(sync=False)):
+        if not all(self.registry.get_flags()):
             raise Exception(f"❗Zarr {self.path} is not fully built, not writing statistics into dataset.")
 
         for k in ["mean", "stdev", "minimum", "maximum", "sums", "squares", "count", "has_nans"]:
