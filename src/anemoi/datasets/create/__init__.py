@@ -172,6 +172,13 @@ class Dataset:
         """
         self.path = path
 
+        if Zarr2AndZarr3.version == "3" and not os.environ.get("ANEMOI_DATASETS_ALLOW_BUILDING_ZARR3_DATASETS"):
+            raise ValueError(
+                "zarr 3 is installed. anemoi-datasets supports zarr 3, but the datasets build with zarr 3 will "
+                "not be readable by zarr 2. It is likely that you do not want to create a dataset with zarr 3. "
+                "Please uninstall zarr 3 and install zarr 2."
+            )
+
         _, ext = os.path.splitext(self.path)
         if ext != ".zarr":
             raise ValueError(f"Unsupported extension={ext} for path={self.path}")
