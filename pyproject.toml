@@ -49,8 +49,8 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "anemoi-transform>=0.1.1",
-  "anemoi-utils[provenance]>=0.4.11",
+  "anemoi-transform>=0.1.4",
+  "anemoi-utils[provenance]>=0.4.16",
   "cfunits",
   "numpy",
   "pyyaml",
@@ -64,7 +64,12 @@ dependencies = [
 ]
 
 optional-dependencies.all = [
-  "anemoi-datasets[create,remote,xarray]",
+  "anemoi-datasets[create,remote,xarray,comparelam]",
+]
+
+optional-dependencies.comparelam = [
+  "prettytable",
+  "termcolor",
 ]
 
 optional-dependencies.create = [
@@ -81,6 +86,7 @@ optional-dependencies.dev = [
 ]
 
 optional-dependencies.docs = [
+  "anemoi-datasets[all]",
   "nbsphinx",
   "pandoc",
   "sphinx",
@@ -94,10 +100,12 @@ optional-dependencies.remote = [
 ]
 
 optional-dependencies.tests = [
+  "anemoi-datasets[xarray]",
   "pytest",
 ]
 
 optional-dependencies.xarray = [
+  "adlfs",
   "gcsfs",
   "kerchunk",
   "pandas",
