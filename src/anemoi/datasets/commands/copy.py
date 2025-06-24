@@ -305,7 +305,6 @@ class ZarrCopier:
                 LOG.info(f"Copying attribute {k} = {textwrap.shorten(str(v), 40)}")
             target.attrs[k] = v
 
-
         source_keys = list(source.keys())
 
         if not source_keys:
@@ -425,7 +424,6 @@ class ZarrCopier:
         target = open_target()
 
         assert target is not None, target
-
 
         if self.verbosity > 0:
             LOG.info(f"Open source: {self.source}")

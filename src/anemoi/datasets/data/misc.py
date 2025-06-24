@@ -22,10 +22,8 @@ from typing import Tuple
 from typing import Union
 
 import numpy as np
-
 import zarr
 from anemoi.utils.config import load_any_dict_format
-
 from anemoi.utils.config import load_config as load_settings
 from numpy.typing import NDArray
 
