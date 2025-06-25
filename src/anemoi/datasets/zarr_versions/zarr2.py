@@ -168,5 +168,13 @@ class DebugStore(ReadOnlyStore):
         return key in self.store
 
 
-def change_dtype_datetime64(a):
-    return a
+def create_array(zarr_root, *args, **kwargs):
+    return zarr_root.create_dataset(*args, **kwargs)
+
+
+def change_dtype_datetime64(dtype):
+    return dtype
+
+
+def cast_dtype_datetime64(array, dtype):
+    return array, dtype
