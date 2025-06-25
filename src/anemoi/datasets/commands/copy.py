@@ -20,8 +20,8 @@ import tqdm
 from anemoi.utils.remote import Transfer
 from anemoi.utils.remote import TransferMethodNotImplementedError
 
-from anemoi.datasets import Zarr2AndZarr3
 from anemoi.datasets.check import check_zarr
+from anemoi.datasets.zarr_versions import zarr_2_or_3
 
 from . import Command
 
@@ -213,7 +213,7 @@ class ZarrCopier:
         target_data = (
             target["data"]
             if "data" in target
-            else Zarr2AndZarr3.create_array(
+            else zarr_2_or_3.create_array(
                 target,
                 "data",
                 shape=source_data.shape,
@@ -319,7 +319,7 @@ class ZarrCopier:
                     LOG.info(f"Skipping {name}")
                 continue
 
-            if Zarr2AndZarr3.is_zarr_group(source[name]):
+            if zarr_2_or_3.is_zarr_group(source[name]):
                 group = target[name] if name in target else target.create_group(name)
                 self.copy_group(
                     source[name],
@@ -413,7 +413,7 @@ class ZarrCopier:
                     sys.exit(0)
 
                 LOG.error("Target already exists, resuming copy.")
-                return zarr.open(self.target, mode=Zarr2AndZarr3.zarr_open_mode_append())
+                return zarr.open(self.target, mode=zarr_2_or_3.open_mode_append)
 
             LOG.error("Target already exists, use either --overwrite or --resume.")
             sys.exit(1)

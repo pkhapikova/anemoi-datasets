@@ -9,7 +9,6 @@
 
 from typing import List
 
-from .add_zarr_support import Zarr2AndZarr3
 from .data import MissingDateError
 from .data import add_dataset_path
 from .data import add_named_dataset
@@ -31,5 +30,4 @@ __all__: List[str] = [
     "MissingDateError",
     "open_dataset",
     "__version__",
-    "Zarr2AndZarr3",
 ]

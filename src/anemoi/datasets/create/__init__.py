@@ -32,13 +32,13 @@ from anemoi.utils.sanitise import sanitise
 from earthkit.data.core.order import build_remapping
 
 from anemoi.datasets import MissingDateError
-from anemoi.datasets import Zarr2AndZarr3
 from anemoi.datasets import open_dataset
 from anemoi.datasets.create.input.trace import enable_trace
 from anemoi.datasets.create.persistent import build_storage
 from anemoi.datasets.data.misc import as_first_date
 from anemoi.datasets.data.misc import as_last_date
 from anemoi.datasets.dates.groups import Groups
+from anemoi.datasets.zarr_versions import zarr_2_or_3
 
 from .check import DatasetName
 from .check import check_data_values
@@ -157,7 +157,7 @@ def _path_readable(path: str) -> bool:
     try:
         zarr.open(path, "r")
         return True
-    except Zarr2AndZarr3.get_not_found_exception():
+    except zarr_2_or_3.FileNotFoundException:
         return False
 
 
@@ -174,11 +174,9 @@ class Dataset:
         """
         self.path = path
 
-        if Zarr2AndZarr3.version == "3" and not os.environ.get("ANEMOI_DATASETS_ALLOW_BUILDING_ZARR3_DATASETS"):
+        if zarr_2_or_3.version != 2:
             raise ValueError(
-                "zarr 3 is installed. anemoi-datasets supports zarr 3, but the datasets build with zarr 3 will "
-                "not be readable by zarr 2. It is likely that you do not want to create a dataset with zarr 3. "
-                "Please uninstall zarr 3 and install zarr 2."
+                f"Only zarr version 2 is supported when creating datasets, found version: {zarr.__version__}"
             )
 
         _, ext = os.path.splitext(self.path)
@@ -218,7 +216,7 @@ class Dataset:
         import zarr
 
         LOG.debug(f"Updating metadata {kwargs}")
-        z = zarr.open(self.path, mode=Zarr2AndZarr3.zarr_open_mode_append())
+        z = zarr.open(self.path, mode=zarr_2_or_3.open_mode_append)
         for k, v in kwargs.items():
             if isinstance(v, np.datetime64):
                 v = v.astype(datetime.datetime)
