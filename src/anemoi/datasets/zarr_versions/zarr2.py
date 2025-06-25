@@ -13,8 +13,6 @@ from typing import Optional
 
 import zarr
 
-from ..zarr_versions import zarr_2_or_3
-
 LOG = logging.getLogger(__name__)
 
 
@@ -120,7 +118,7 @@ class S3Store(ReadOnlyStore):
         return response["Body"].read()
 
 
-class HTTPStore(zarr_2_or_3.ReadOnlyStore):
+class HTTPStore(ReadOnlyStore):
     """A read-only store for HTTP(S) resources."""
 
     def __init__(self, url: str) -> None:
@@ -140,33 +138,8 @@ class HTTPStore(zarr_2_or_3.ReadOnlyStore):
         r.raise_for_status()
         return r.content
 
-    # Version 3
-    async def get(self, key: str, prototype, byte_range=None):
-        """Retrieve an item from the store."""
-        assert byte_range is None, "S3Store does not support byte ranges"
-        try:
-            response = self.s3.get_object(Bucket=self.bucket, Key=self.key + "/" + key)
-        except self.s3.exceptions.NoSuchKey:
-            return None
 
-        return prototype.buffer.from_bytes(response["Body"].read())
-
-    @property
-    def supports_listing(self):
-        return True
-
-    async def list_dir(self, prefix: str):
-        from anemoi.utils.remote.s3 import list_folder
-
-        path = "s3://" + self.bucket + "/" + self.key + "/" + prefix
-        print(path)
-        for n in list_folder(path):
-            print("------------", n)
-            yield n
-        # return [x[len(self.key) + 1:] for x in result if x.startswith(self.key + "/")]
-
-
-class PlanetaryComputerStore(zarr_2_or_3.ReadOnlyStore):
+class PlanetaryComputerStore(ReadOnlyStore):
     """We write our own Store to access catalogs on Planetary Computer,
     as it requires some extra arguments to use xr.open_zarr.
     """
@@ -212,7 +185,7 @@ class PlanetaryComputerStore(zarr_2_or_3.ReadOnlyStore):
         raise NotImplementedError()
 
 
-class DebugStore(zarr_2_or_3.ReadOnlyStore):
+class DebugStore(ReadOnlyStore):
     """A store to debug the zarr loading."""
 
     def __init__(self, store: Any) -> None:
