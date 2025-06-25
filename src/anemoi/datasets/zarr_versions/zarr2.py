@@ -23,53 +23,6 @@ Group = zarr.hierarchy.Group
 open_mode_append = "w+"
 
 
-class Zarr2:
-    @classmethod
-    def base_store(cls):
-        return zarr.storage.BaseStore
-
-    @classmethod
-    def is_zarr_group(cls, obj):
-        return isinstance(obj, zarr.hierarchy.Group)
-
-    @classmethod
-    def create_array(cls, zarr_root, *args, **kwargs):
-        return zarr_root.create_dataset(*args, **kwargs)
-
-    @classmethod
-    def change_dtype_datetime64(cls, dtype):
-        return dtype
-
-    @classmethod
-    def cast_dtype_datetime64(cls, array, dtype):
-        return array, dtype
-
-    @classmethod
-    def get_not_found_exception(cls):
-        return zarr.errors.PathNotFoundError
-
-    @classmethod
-    def zarr_open_mode_append(cls):
-        return "w+"
-
-    @classmethod
-    def zarr_open_to_patch_in_tests(cls):
-        return "zarr.convenience.open"
-
-    @classmethod
-    def zarr_open(cls, *args, **kwargs):
-        return zarr.convenience.open(*args, **kwargs)
-
-    @classmethod
-    def get_read_only_store_class(cls):
-
-        return ReadOnlyStore
-
-    @classmethod
-    def raise_if_not_supported(cls, msg):
-        pass
-
-
 class ReadOnlyStore(zarr.storage.BaseStore):
     """A base class for read-only stores."""
 
@@ -213,3 +166,7 @@ class DebugStore(ReadOnlyStore):
     def __contains__(self, key: str) -> bool:
         """Check if the store contains a key."""
         return key in self.store
+
+
+def change_dtype_datetime64(a):
+    return a

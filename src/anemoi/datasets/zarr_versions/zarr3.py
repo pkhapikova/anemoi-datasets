@@ -58,3 +58,7 @@ class HTTPStore(zarr.storage.ObjectStore):
 
 
 DebugStore = zarr.storage.LoggingStore
+
+
+def change_dtype_datetime64(a):
+    return a
