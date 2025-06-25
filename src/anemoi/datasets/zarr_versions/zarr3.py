@@ -60,5 +60,31 @@ class HTTPStore(zarr.storage.ObjectStore):
 DebugStore = zarr.storage.LoggingStore
 
 
-def change_dtype_datetime64(a):
-    return a
+def create_array(zarr_root, *args, **kwargs):
+    if "compressor" in kwargs and kwargs["compressor"] is None:
+        # compressor is deprecated, use compressors instead
+        kwargs.pop("compressor")
+        kwargs["compressors"] = ()
+    return zarr_root.create_array(*args, **kwargs)
+
+
+def change_dtype_datetime64(dtype):
+    # remove this flag (and the relevant code) when Zarr 3 supports datetime64
+    # https://github.com/zarr-developers/zarr-python/issues/2616
+    import numpy as np
+
+    if dtype == "datetime64[s]":
+        dtype = np.dtype("int64")
+    return dtype
+
+
+def cast_dtype_datetime64(array, dtype):
+    # remove this flag (and the relevant code) when Zarr 3 supports datetime64
+    # https://github.com/zarr-developers/zarr-python/issues/2616
+    import numpy as np
+
+    if dtype == np.dtype("datetime64[s]"):
+        dtype = "int64"
+        array = array.astype(dtype)
+
+    return array, dtype
