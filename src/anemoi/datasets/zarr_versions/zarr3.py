@@ -60,12 +60,72 @@ class HTTPStore(zarr.storage.ObjectStore):
 DebugStore = zarr.storage.LoggingStore
 
 
+class PlanetaryComputerStore:
+    """We write our own Store to access catalogs on Planetary Computer,
+    as it requires some extra arguments to use xr.open_zarr.
+    """
+
+    def __init__(self, data_catalog_id: str) -> None:
+        """Initialize the PlanetaryComputerStore with a data catalog ID.
+
+        Parameters
+        ----------
+        data_catalog_id : str
+            The data catalog ID.
+        """
+        super().__init__()
+        self.data_catalog_id = data_catalog_id
+
+        import planetary_computer
+        import pystac_client
+
+        catalog = pystac_client.Client.open(
+            "https://planetarycomputer.microsoft.com/api/stac/v1/",
+            modifier=planetary_computer.sign_inplace,
+        )
+        collection = catalog.get_collection(self.data_catalog_id)
+
+        asset = collection.assets["zarr-abfs"]
+
+        if "xarray:storage_options" in asset.extra_fields:
+            store = {
+                "store": asset.href,
+                "storage_options": asset.extra_fields["xarray:storage_options"],
+                **asset.extra_fields["xarray:open_kwargs"],
+            }
+        else:
+            store = {
+                "filename_or_obj": asset.href,
+                **asset.extra_fields["xarray:open_kwargs"],
+            }
+
+        self.store = store
+
+
 def create_array(zarr_root, *args, **kwargs):
     if "compressor" in kwargs and kwargs["compressor"] is None:
         # compressor is deprecated, use compressors instead
         kwargs.pop("compressor")
         kwargs["compressors"] = ()
-    return zarr_root.create_array(*args, **kwargs)
+
+    data = kwargs.pop("data", None)
+    if data is not None:
+        kwargs.setdefault("dtype", change_dtype_datetime64(data.dtype))
+        kwargs.setdefault("shape", data.shape)
+
+    try:
+        z = zarr_root.create_array(*args, **kwargs)
+        if data is not None:
+            z[:] = data
+        return z
+    except Exception:
+        LOG.exception("Failed to create array in Zarr store")
+        LOG.error(
+            "Failed to create array in Zarr store with args: %s, kwargs: %s",
+            args,
+            kwargs,
+        )
+        raise
 
 
 def change_dtype_datetime64(dtype):
@@ -88,3 +148,18 @@ def cast_dtype_datetime64(array, dtype):
         array = array.astype(dtype)
 
     return array, dtype
+
+
+def supports_datetime64():
+    store = zarr.storage.MemoryStore()
+    try:
+        zarr.create_array(store=store, shape=(10,), dtype="datetime64[s]")
+        return True
+    except KeyError:
+        # If a KeyError is raised, it means datetime64 is not supported
+        return False
+
+
+if __name__ == "__main__":
+    print("Zarr version:", version)
+    print("Zarr supports datetime64:", supports_datetime64())

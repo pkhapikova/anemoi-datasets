@@ -178,3 +178,7 @@ def change_dtype_datetime64(dtype):
 
 def cast_dtype_datetime64(array, dtype):
     return array, dtype
+
+
+def supports_datetime64():
+    return True

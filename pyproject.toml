@@ -57,11 +57,7 @@ dependencies = [
   "pyyaml",
   "semantic-version",
   "tqdm",
-  # anemoi-datasets supports zarr 2 and zarr 3, but we still use only zarr 2:
-  # - we don't want to create zarr 3 datasets yet, as they will no be readable by zarr 2
-  # - anemoi-inference needs zarr 2 for patching
-  # - anemoi-registry needs zarr 2
-  "zarr<3",
+  "zarr",
 ]
 
 optional-dependencies.all = [
@@ -98,6 +94,7 @@ optional-dependencies.docs = [
 
 optional-dependencies.remote = [
   "boto3",
+  "obstore",
   "requests",
 ]
 
