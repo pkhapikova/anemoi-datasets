@@ -60,48 +60,6 @@ class HTTPStore(zarr.storage.ObjectStore):
 DebugStore = zarr.storage.LoggingStore
 
 
-class PlanetaryComputerStore:
-    """We write our own Store to access catalogs on Planetary Computer,
-    as it requires some extra arguments to use xr.open_zarr.
-    """
-
-    def __init__(self, data_catalog_id: str) -> None:
-        """Initialize the PlanetaryComputerStore with a data catalog ID.
-
-        Parameters
-        ----------
-        data_catalog_id : str
-            The data catalog ID.
-        """
-        super().__init__()
-        self.data_catalog_id = data_catalog_id
-
-        import planetary_computer
-        import pystac_client
-
-        catalog = pystac_client.Client.open(
-            "https://planetarycomputer.microsoft.com/api/stac/v1/",
-            modifier=planetary_computer.sign_inplace,
-        )
-        collection = catalog.get_collection(self.data_catalog_id)
-
-        asset = collection.assets["zarr-abfs"]
-
-        if "xarray:storage_options" in asset.extra_fields:
-            store = {
-                "store": asset.href,
-                "storage_options": asset.extra_fields["xarray:storage_options"],
-                **asset.extra_fields["xarray:open_kwargs"],
-            }
-        else:
-            store = {
-                "filename_or_obj": asset.href,
-                **asset.extra_fields["xarray:open_kwargs"],
-            }
-
-        self.store = store
-
-
 def create_array(zarr_root, *args, **kwargs):
     if "compressor" in kwargs and kwargs["compressor"] is None:
         # compressor is deprecated, use compressors instead
