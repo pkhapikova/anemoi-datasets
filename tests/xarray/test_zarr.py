@@ -132,6 +132,39 @@ def test_noaa_replay() -> None:
     )
 
 
+@skip_if_offline
+@skip_missing_packages("s3fs")
+def test_aws_s3() -> None:
+    """Test loading and validating an AWS S3 dataset."""
+    url = "s3://aodn-cloud-optimised/model_sea_level_anomaly_gridded_realtime.zarr"
+    ds = xr.open_zarr(url, consolidated=True, storage_options={"anon": True})
+
+    fs = XarrayFieldList.from_xarray(ds)
+
+    assert_field_list(
+        fs,
+        400,
+        "2011-09-01T00:00:00",
+        "2011-12-12T00:00:00",
+    )
+
+
+@skip_if_offline
+def test_aws_s3_https() -> None:
+    """Test loading and validating an AWS S3 dataset via HTTPS."""
+    url = "https://aodn-cloud-optimised.s3.amazonaws.com/model_sea_level_anomaly_gridded_realtime.zarr"
+    ds = xr.open_zarr(url, consolidated=True)
+
+    fs = XarrayFieldList.from_xarray(ds)
+
+    assert_field_list(
+        fs,
+        400,
+        "2011-09-01T00:00:00",
+        "2011-12-12T00:00:00",
+    )
+
+
 if __name__ == "__main__":
     for name, obj in list(globals().items()):
         if name.startswith("test_") and callable(obj):
